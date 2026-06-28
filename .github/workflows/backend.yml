@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  pull_request:
+    paths:
+      - "backend-ai/**"
+      - ".github/workflows/backend.yml"
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "backend-ai/**"
+      - ".github/workflows/backend.yml"
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend-ai
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Import smoke
+        run: |
+          python -c "from src.main import app; from src.app.factory import create_app; from src.app.routers import register_routers; print('ok')"
+
+      - name: Run backend tests
+        run: |
+          PYTHONPATH=. pytest tests -q
